@@ -23,15 +23,31 @@ CORS(app)
 Migrate(app, db)
 
 # Models
+class Product(db.Model):
+    id=db.Column(db.Integer, primary_key=True)
+    name=db.Column(db.String(255))
+    description=db.Column(db.String(255))
+    price=db.Column(db.Float)
+    inventory_quantity=db.Column(db.Integer)
 
 
 
 # Schemas
-
+class ProductSchema(ma.Schema):
+    #id=fields.Integer(primary_key=True)
+    pass
 
 
 # Resources
+class ProductListResource(Resource):
+    def get(self):
+        all_products=Product.query.all()
 
+
+class ProductResource(Resource):
+    pass
 
 
 # Routes
+api.add_resource(ProductListResource, 'api/products')
+api.add_resource(ProductResource, 'api/products/<int:pk>')
