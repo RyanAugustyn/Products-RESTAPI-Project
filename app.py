@@ -53,14 +53,32 @@ class ProductListResource(Resource):
         all_products=Product.query.all()
         return products_schema.dump(all_products), 200
     def post(self):
-        form_data=request.get_json
-
-
+        incoming_data=request.get_json
+        new_product=product_schema.load(incoming_data)
+        db.session.add(new_product)
+        db.session.commit()
+        return product_schema.dump(new_product), 201
+    
 class ProductResource(Resource):
     def get_by_id(self, product_id):
         product=Product.query.get_or_404(product_id)
         return product_schema.dump(product), 200
-
+    def put(self, product_id):
+        product=Product.query.get_or_404(product_id)
+        if 'name' in request.json:
+            product.name=request.json['name']
+        if 'description' in request.json:
+            product.description=request.json['description']
+        if 'price' in request.json:
+            product.price=request.json['price']
+        if 'inventory_quantity' in request.json:
+            product.inventory_quantity=request.json['inventory_quantity']
+        db.session.commit()
+        return product_schema.dump(product)
+    def delete(self, product_id):
+        product=Product.query.get_or_404(product_id)
+        db.session.delete(product)
+        return '', 204
 
 # Routes
 api.add_resource(ProductListResource, '/api/products')
