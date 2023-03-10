@@ -59,7 +59,7 @@ class ProductListResource(Resource):
         return products_schema.dump(all_products), 200
     def post(self):
         try:
-            incoming_data=request.get_json
+            incoming_data=request.get_json()
             new_product=product_schema.load(incoming_data)
             db.session.add(new_product)
             db.session.commit()
