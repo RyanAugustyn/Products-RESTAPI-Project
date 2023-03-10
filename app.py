@@ -30,6 +30,10 @@ class Product(db.Model):
     description=db.Column(db.String(255))
     price=db.Column(db.Float)
     inventory_quantity=db.Column(db.Integer)
+    img_link=db.Column(db.String(255))
+
+    def __repr__(self):
+        return f'{self.name} {self.description} {self.price} {self.inventory_quantity} {self.img_link}'
 
 # Schemas
 class ProductSchema(ma.Schema):
@@ -37,9 +41,10 @@ class ProductSchema(ma.Schema):
     name=fields.String()
     description=fields.String()
     price=fields.Float()
-    inventory_qualtity=fields.Integer()
+    inventory_quantity=fields.Integer()
+    img_link=fields.String()
     class Meta:
-        fields = ("id", "name", "description", "price", "inventory_quantity")
+        fields = ("id", "name", "description", "price", "inventory_quantity", "img_link")
     @post_load
     def create_product(self, data, **kwargs):
         return Product(**data)
@@ -53,11 +58,14 @@ class ProductListResource(Resource):
         all_products=Product.query.all()
         return products_schema.dump(all_products), 200
     def post(self):
-        incoming_data=request.get_json
-        new_product=product_schema.load(incoming_data)
-        db.session.add(new_product)
-        db.session.commit()
-        return product_schema.dump(new_product), 201
+        try:
+            incoming_data=request.get_json
+            new_product=product_schema.load(incoming_data)
+            db.session.add(new_product)
+            db.session.commit()
+            return product_schema.dump(new_product), 201
+        except ValidationError as error:
+            return error.messages, 400
     
 class ProductResource(Resource):
     def get_by_id(self, product_id):
@@ -73,6 +81,8 @@ class ProductResource(Resource):
             product.price=request.json['price']
         if 'inventory_quantity' in request.json:
             product.inventory_quantity=request.json['inventory_quantity']
+        if 'img_link' in request.json:
+            product.img_Link=request.json['img_link']
         db.session.commit()
         return product_schema.dump(product)
     def delete(self, product_id):
